@@ -34,6 +34,29 @@ async function fetchSitemap(url) {
     return links;
 }
 
+// Function to scroll the page to the bottom and back to the top
+async function scrollPageToBottomAndBack(page) {
+    await page.evaluate( async () => {
+      await new Promise((resolve) => {
+        let totalHeight = 0;
+        const distance = 100;
+
+        const scrollDownInterval = setInterval(() => {
+            window.scrollBy(0, distance);
+            totalHeight += distance;
+
+            if (totalHeight >= document.body.scrollHeight) {
+                clearInterval(scrollDownInterval);
+                resolve();
+            }
+        }, 100);
+      });
+  
+      // Scroll back to top
+      window.scrollTo(0, 0);
+    });
+  }
+
 // Function to capture a screenshot of a given URL
 async function captureScreenshot(url, browser, index) {
     const page = await browser.newPage();
@@ -44,7 +67,10 @@ async function captureScreenshot(url, browser, index) {
 
     await page.goto(url, { waitUntil: 'load' });
 
-    // Wait for 2 seconds to ensure all animations complete
+    // Scroll to the bottom of the page to load all lazy-load images
+    await scrollPageToBottomAndBack(page);
+
+    // Wait for 2 second to ensure all load animations complete
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Ensure the directory exists
