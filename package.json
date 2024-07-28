@@ -1,0 +1,14 @@
+{
+  "name": "screenshot-website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer": "^22.14.0"
+  }
+}
