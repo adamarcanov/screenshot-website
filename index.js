@@ -5,18 +5,13 @@ const fs = require('fs');
 const { join } = require('path');
 
 function urlToSlug(url) {
-    let slug = url.toLowerCase();
-    
-    // Remove special characters, keep only alphanumeric and spaces
-    slug = slug.replace(/[^a-z0-9\s-]/g, '');
-    
-    // Replace spaces and consecutive hyphens with single hyphens
-    slug = slug.replace(/\s+/g, '-').replace(/-+/g, '-');
-    
-    // Remove leading and trailing hyphens
-    slug = slug.replace(/^-+|-+$/g, '');
-    
-    return slug;
+    return url
+        .replace(/^https?:\/\//, '')  // Remove protocol
+        .replace(/[.]/g, '-')  // change dots to hyphens
+        .replace(/\/$/, '')  // Remove trailing slash
+        .replace(/[\/:]/g, '-')  // Replace slashes and colons with hyphens
+        .replace(/[^\w\-]+/g, '')  // Remove non-alphanumeric characters (excluding hyphens)
+        .toLowerCase();  // Convert to lowercase
 }
 
 // Function to fetch and parse sitemap
