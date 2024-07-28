@@ -37,25 +37,43 @@ async function fetchSitemap(url) {
 // Function to scroll the page to the bottom and back to the top
 async function scrollPageToBottomAndBack(page) {
     await page.evaluate( async () => {
-      await new Promise((resolve) => {
-        let totalHeight = 0;
-        const distance = 100;
+        await new Promise((resolve) => {
+            let totalHeight = 0;
+            const distance = 100;
 
-        const scrollDownInterval = setInterval(() => {
-            window.scrollBy(0, distance);
-            totalHeight += distance;
+            const scrollDownInterval = setInterval(() => {
+                window.scrollBy(0, distance);
+                totalHeight += distance;
 
-            if (totalHeight >= document.body.scrollHeight) {
-                clearInterval(scrollDownInterval);
-                resolve();
-            }
-        }, 100);
-      });
+                if (totalHeight >= document.body.scrollHeight) {
+                    clearInterval(scrollDownInterval);
+                    resolve();
+                }
+            }, 100);
+        });
   
-      // Scroll back to top
-      window.scrollTo(0, 0);
+        // Scroll back to top
+        window.scrollTo(0, 0);
     });
-  }
+}
+
+// Function to trigger all images to load
+async function triggerAllImagesToLoad(page) {
+    await page.evaluate(() => {
+        const images = Array.from(document.querySelectorAll('img'));
+        images.forEach(img => {
+
+            const newImg = new Image();
+            newImg.src = img.src;
+
+            // force reload images with async decoding
+            // if (img.getAttribute('decoding') === 'async') {
+            //     const newImg = new Image();
+            //     newImg.src = img.src;
+            // }
+        });
+    });
+}
 
 // Function to capture a screenshot of a given URL
 async function captureScreenshot(url, browser, index) {
@@ -67,11 +85,14 @@ async function captureScreenshot(url, browser, index) {
 
     await page.goto(url, { waitUntil: 'load' });
 
-    // Scroll to the bottom of the page to load all lazy-load images
+    // Trigger all images to load
+    await triggerAllImagesToLoad(page);
+
+    // Scroll to the bottom of the page to load all lazy-load images and back to the top
     await scrollPageToBottomAndBack(page);
 
-    // Wait for 2 second to ensure all load animations complete
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for 1 second to ensure all animations complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Ensure the directory exists
     const screenshotsDir = join(__dirname, 'screenshots');
