@@ -1,8 +1,10 @@
+const fs = require('fs');
+const { join } = require('path');
+
 const puppeteer = require('puppeteer');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const fs = require('fs');
-const { join } = require('path');
+const xml2js = require('xml2js');
 const colors = require('colors');
 
 function urlToSlug(url) {
@@ -17,19 +19,50 @@ function urlToSlug(url) {
 
 // Function to fetch and parse sitemap
 async function fetchSitemap(url) {
-    const response = await axios.get( join( url, '/sitemap/' ) );
-    const html = response.data;
-    const $ = cheerio.load(html);
-    
-    // Extract all links from the page
     const links = [];
-    $('a').each((index, element) => {
-        let link = $(element).attr('href');
-        if ( link && link.indexOf('/') === 0 ) {
-            link = url + link.substring(1);
+
+    const response = await axios.get(url);
+    const contentType = response.headers['content-type'];
+
+    try {
+        if ( contentType.includes('text/html') ) {
+            const html = response.data;
+
+            const $ = cheerio.load(html);
+
+            // Extract all links from the page
+            $('a').each((index, element) => {
+                let link = $(element).attr('href');
+                if ( link && link.indexOf('/') === 0 ) {
+                    link = url + link.substring(1);
+                }
+                if (link) links.push(link);
+            });
+
+        } else if (contentType.includes('application/xml') || contentType.includes('text/xml')) {
+            const sitemapXml = response.data;
+
+            xml2js.parseString(sitemapXml, (err, result) => {
+                if (err) throw err;
+
+                // Extract URLs from the sitemap
+                const urls = result.urlset.url.map(entry => entry.loc[0]);
+
+                // Print the URLs
+                urls.forEach( link => {
+                    if ( link && link.indexOf('/') === 0 ) {
+                        link = url + link.substring(1);
+                    }
+                    if (link) links.push(link);
+                });
+            });
+            
+        } else {
+            console.log('Unknown content type.');
         }
-        if (link) links.push(link);
-    });
+    } catch (error) {
+        console.error('Error fetching the content:', error);
+    }
     
     return links;
 }
