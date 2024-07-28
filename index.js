@@ -130,7 +130,7 @@ async function captureScreenshot(url, browser, index) {
             console.log(`Capturing screenshot of ${link}`);
             await captureScreenshot(link, browser, i);
         } catch (error) {
-            console.error('Failed to capture screenshot'.red + ` of ${link}: ${error.message}`);
+            console.error('Failed to capture screenshot'.red + ` of ${link} => ${error.message}`);
         }
     }
 
