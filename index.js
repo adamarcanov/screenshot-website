@@ -3,6 +3,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const { join } = require('path');
+const colors = require('colors');
 
 function urlToSlug(url) {
     return url
@@ -53,8 +54,8 @@ async function captureScreenshot(url, browser, index) {
     }
 
     const screenshotPath = join(screenshotsDir, `${urlToSlug(url)}.png`);
-    await page.screenshot({ path: screenshotPath });
-    // await page.screenshot({ path: screenshotPath, fullPage: true });
+    // await page.screenshot({ path: screenshotPath });
+    await page.screenshot({ path: screenshotPath, fullPage: true });
     await page.close();
 }
 
@@ -82,7 +83,7 @@ async function captureScreenshot(url, browser, index) {
             console.log(`Capturing screenshot of ${link}`);
             await captureScreenshot(link, browser, i);
         } catch (error) {
-            console.error(`Failed to capture screenshot of ${link}: ${error.message}`);
+            console.error('Failed to capture screenshot'.red + ` of ${link}: ${error.message}`);
         }
     }
 
